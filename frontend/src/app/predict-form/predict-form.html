@@ -1,6 +1,7 @@
- <div class="predict-form">
+
+<div class="predict-form">
     <h2>Predictive Maintenance Form</h2>
-    <form ngSubmit="onSubmit()">
+    <form (ngSubmit)="onSubmit()">
 
         <label for="type">Type (0=Low, 1=Medium, 2=High):</label>
         <input type="number" id="type" [(ngModel)]="type" name="type" min="0" max="2" required>
