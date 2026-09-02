@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import joblib
 import pandas as pd  
+from database import Prediction, SessionLocal
 
 # Load the trained model
 model = joblib.load('model.joblib')
@@ -50,7 +51,26 @@ async def predict(data: SensorData):
     # we onl need the failure probability, so we take Index [1]
     
     risk_probability = model.predict_proba(input_df)[0][1]
+    risk_percent = round(risk_probability * 100, 1)
     
     # Convert to a percentage and round 1 decimal place
-    return {"risk": round(risk_probability * 100, 1)}
     
+
+    db = SessionLocal()
+    
+    new_prediction = Prediction(
+        type=data.type,
+        air_temperature=data.air_temperature,
+        process_temperature=data.process_temperature,
+        rotational_speed=data.rotational_speed,
+        torque=data.torque,
+        tool_wear=data.tool_wear,
+        risk=risk_percent
+    )
+    
+    db.add(new_prediction)
+    db.commit()
+    db.close()
+    
+    
+    return {"risk": risk_percent}
